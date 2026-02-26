@@ -1,4 +1,5 @@
 import axios from 'axios';
+import useAuthStore from '../store/useAuthStore';
 
 // Get base URL from environment or use proxy/default
 const API_URL = import.meta.env.VITE_API_URL || 'https://d.dev-baxa.me';
@@ -19,8 +20,8 @@ axiosInstance.interceptors.response.use(
   (error) => {
     // Handle unauthorized errors (e.g., token expiration/missing cookie)
     if (error.response && error.response.status === 401) {
-      // You can dispatch a global event or redirect to login
-      // window.location.href = '/login'; 
+      // Clear global auth state on 401
+      useAuthStore.getState().logout();
     }
     return Promise.reject(error);
   }
