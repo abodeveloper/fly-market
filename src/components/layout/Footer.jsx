@@ -1,7 +1,8 @@
-import { Facebook, Instagram, Youtube, Mail, Phone, MapPin, Send, Rocket } from 'lucide-react';
+import { Facebook, Instagram, Youtube, Mail, Phone, MapPin, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { siteConfig } from '@/config/site';
+import { Logo } from '@/components/common/Logo';
 
 export function Footer() {
   const { t } = useTranslation();
@@ -17,14 +18,7 @@ export function Footer() {
       <div className="container mx-auto px-4 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-2 group w-fit">
-              <div className="bg-primary text-primary-foreground p-1.5 rounded-xl shadow-lg shadow-primary/20 group-hover:-translate-y-0.5 transition-transform">
-                <Rocket className="h-5 w-5 md:h-6 md:w-6 fill-current" />
-              </div>
-              <span className="font-black inline-block text-2xl md:text-3xl tracking-tighter text-foreground drop-shadow-sm">
-                Fly<span className="text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary to-green-500">Market</span>
-              </span>
-            </Link>
+            <Logo onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="w-fit" />
             <p className="text-sm text-muted-foreground leading-relaxed">
               {t("Yangi avlod bozori. Sifat, ishonch va hamyonbop narxlar. O'zingiz qidirgan barcha mahsulotlarni bizning platformamizdan toping.")}
             </p>

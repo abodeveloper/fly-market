@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from '../common/ThemeToggle';
 import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, User, Menu, Home, Package, Info, HelpCircle, PhoneCall, Settings, ShoppingBag, Rocket } from 'lucide-react';
+import { ShoppingCart, User, Menu, Home, Package, Info, HelpCircle, PhoneCall, Settings, ShoppingBag, LogOut } from 'lucide-react';
 import useAuthStore from '@/store/useAuthStore';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
@@ -16,6 +16,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LoginModal } from '@/components/auth/LoginModal';
 import { RegisterModal } from '@/components/auth/RegisterModal';
+import { Logo } from '@/components/common/Logo';
 
 export function Header() {
   const { t } = useTranslation();
@@ -59,7 +60,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4 flex h-12 items-center justify-between">
+      <div className="container mx-auto px-4 flex h-14 items-center justify-between">
         {/* Left: Mobile Menu & Logo */}
         <div className="flex items-center gap-2 md:gap-0">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
@@ -73,14 +74,7 @@ export function Header() {
               <SheetTitle className="sr-only">{t('Navigatsiya menyusi')}</SheetTitle>
               
               <div className="p-6 pb-2">
-                 <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 w-fit mb-4 group">
-                  <div className="bg-primary text-primary-foreground p-1.5 rounded-xl shadow-lg shadow-primary/30 group-hover:-translate-y-0.5 transition-transform">
-                    <Rocket className="h-5 w-5 fill-current" />
-                  </div>
-                  <span className="font-black text-2xl tracking-tighter text-foreground drop-shadow-sm">
-                    Fly<span className="text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary to-green-500">Market</span>
-                  </span>
-                 </Link>
+                 <Logo onClick={() => setIsMobileMenuOpen(false)} className="w-fit mb-4" />
               </div>
 
               <div className="flex-1 overflow-y-auto px-4 pb-8 space-y-1">
@@ -133,15 +127,24 @@ export function Header() {
               
               <div className="px-4 mb-4">
                 {isAuthenticated ? (
-                  <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-secondary/50 hover:bg-secondary text-foreground font-bold transition-all duration-300">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center -ml-1 text-primary">
-                      <User className="h-4 w-4 text-primary/70" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-sm leading-none mb-1">{user?.name}</span>
-                      <span className="text-[10px] text-muted-foreground leading-none font-normal">{user?.email}</span>
-                    </div>
-                  </Link>
+                  <div className="flex flex-col gap-2">
+                    <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-secondary/50 hover:bg-secondary text-foreground font-bold transition-all duration-300">
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center -ml-1 text-primary">
+                        <User className="h-4 w-4 text-primary/70" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm leading-none mb-1">{user?.name}</span>
+                        <span className="text-[10px] text-muted-foreground leading-none font-normal">{user?.email}</span>
+                      </div>
+                    </Link>
+                    <button 
+                      onClick={() => { setIsMobileMenuOpen(false); logout(); }} 
+                      className="flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-destructive/10 hover:bg-destructive/20 text-destructive font-bold transition-all duration-300 text-left w-full"
+                    >
+                      <LogOut className="w-5 h-5" />
+                      {t('Tizimdan chiqish')}
+                    </button>
+                  </div>
                 ) : (
                   <button onClick={() => { setIsMobileMenuOpen(false); setAuthModal('login'); }} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-primary/10 hover:bg-primary/20 text-primary font-bold transition-all duration-300 text-left">
                     <User className="w-5 h-5" />
@@ -163,14 +166,7 @@ export function Header() {
             </SheetContent>
           </Sheet>
 
-          <Link to="/" className="flex items-center gap-2 group pl-1 md:pl-0">
-            <div className="bg-primary text-primary-foreground p-1.5 rounded-xl shadow-lg shadow-primary/20 group-hover:-translate-y-0.5 transition-transform">
-              <Rocket className="h-5 w-5 fill-current" />
-            </div>
-            <span className="font-black sm:inline-block text-xl md:text-2xl tracking-tighter text-foreground drop-shadow-sm">
-              Fly<span className="text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary to-green-500">Market</span>
-            </span>
-          </Link>
+          <Logo className="pl-1 md:pl-0" />
         </div>
 
         {/* Center: Navigation */}
