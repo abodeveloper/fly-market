@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { handleApiError } from '@/utils/errorHandler';
 import useAuthStore from '@/store/useAuthStore';
 import { orderAPI, cartAPI } from '@/services/api';
 import { formatDateTime } from '@/utils/formatDate';
@@ -38,7 +39,7 @@ export function Cart() {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || t("Miqdorni yangilashda xatolik"));
+      handleApiError(error, t("Miqdorni yangilashda xatolik"));
     }
   });
 
@@ -49,7 +50,7 @@ export function Cart() {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || t("Olib tashlashda xatolik"));
+      handleApiError(error, t("Olib tashlashda xatolik"));
     }
   });
 
@@ -68,7 +69,7 @@ export function Cart() {
       queryClient.invalidateQueries({ queryKey: ['my-orders'] });
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || t("Buyurtma berishda xatolik."));
+      handleApiError(error, t("Buyurtma berishda xatolik."));
     }
   });
 

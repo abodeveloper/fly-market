@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { handleApiError } from '@/utils/errorHandler';
 
 export function RegisterModal({ onSuccess, onSwitch }) {
   const { t } = useTranslation();
@@ -29,7 +30,7 @@ export function RegisterModal({ onSuccess, onSwitch }) {
       if (onSuccess) onSuccess();
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || t("Ro'yxatdan o'tishda xatolik"));
+      handleApiError(error, t("Ro'yxatdan o'tishda xatolik"));
     },
   });
 

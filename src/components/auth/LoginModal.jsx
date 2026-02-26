@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { handleApiError } from '@/utils/errorHandler';
 
 export function LoginModal({ onSuccess, onSwitch }) {
   const { t } = useTranslation();
@@ -31,7 +32,7 @@ export function LoginModal({ onSuccess, onSwitch }) {
       if (onSuccess) onSuccess();
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || t("Kirishda xatolik"));
+      handleApiError(error, t("Kirishda xatolik"));
     },
   });
 

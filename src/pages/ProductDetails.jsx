@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { handleApiError } from '@/utils/errorHandler';
 import { Star, ShoppingCart, ArrowLeft, Plus, Minus, Trash2 } from 'lucide-react';
 import { formatDateTime } from '@/utils/formatDate';
 import { useTranslation } from 'react-i18next';
@@ -38,7 +39,7 @@ export function ProductDetails() {
       queryClient.invalidateQueries({ queryKey: ['reviews', id] });
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || t("Sharh yuborishda xatolik"));
+      handleApiError(error, t("Sharh yuborishda xatolik"));
     }
   });
 
@@ -52,7 +53,7 @@ export function ProductDetails() {
       if (error.response?.status === 401) {
         toast.error(t("Savatga narsa qo'shish uchun tizimga kiring."));
       } else {
-        toast.error(error.response?.data?.message || t("Savatga qo'shishda xatolik"));
+        handleApiError(error, t("Savatga qo'shishda xatolik"));
       }
     }
   });
@@ -82,7 +83,7 @@ export function ProductDetails() {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || t("Miqdorni yangilashda xatolik"));
+      handleApiError(error, t("Miqdorni yangilashda xatolik"));
     }
   });
 
@@ -92,7 +93,7 @@ export function ProductDetails() {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || t("Olib tashlashda xatolik"));
+      handleApiError(error, t("Olib tashlashda xatolik"));
     }
   });
 

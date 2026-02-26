@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { handleApiError } from '@/utils/errorHandler';
 import { Minus, Plus, Trash2, ShoppingCart, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
@@ -56,9 +57,9 @@ export function ProductsSection() {
     },
     onError: (error) => {
       if (error.response?.status === 401) {
-        toast.error('Please login to add items to your cart.');
+        toast.error(t("Savatga narsa qo'shish uchun tizimga kiring."));
       } else {
-        toast.error(error.response?.data?.message || 'Failed to add to cart');
+        handleApiError(error, t("Savatga qo'shishda xatolik"));
       }
     }
   });
@@ -69,7 +70,7 @@ export function ProductsSection() {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to update quantity');
+      handleApiError(error, t("Miqdorni yangilashda xatolik"));
     }
   });
 
@@ -79,7 +80,7 @@ export function ProductsSection() {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to remove item');
+      handleApiError(error, t("Olib tashlashda xatolik"));
     }
   });
 
