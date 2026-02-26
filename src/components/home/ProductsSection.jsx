@@ -163,45 +163,61 @@ export function ProductsSection() {
           </Carousel>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center gap-3 mb-12 bg-card p-2 rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-border/60 max-w-5xl mx-auto">
-        <div className="relative flex-1 w-full flex items-center">
-          <Search className="absolute left-3 h-5 w-5 text-muted-foreground" />
-          <Input 
-            placeholder={t("Mahsulotlarni qidirish...")}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-11 border-0 shadow-none focus-visible:ring-0 bg-transparent text-base"
-          />
+        <div className="text-center max-w-5xl mx-auto mb-6 px-2">
+          <h2 className="text-2xl md:text-3xl font-black tracking-tight text-foreground mb-2">
+            {t("Barcha kerakli narsalar bitta joyda")}
+          </h2>
+          <p className="text-sm md:text-base text-muted-foreground">
+            {t("Eng sara mahsulotlarni qulay narxlarda xarid qiling.")}
+          </p>
         </div>
-        <div className="w-full md:w-[220px] border-t md:border-t-0 md:border-l border-border/60 pl-0 md:pl-2">
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="h-11 border-0 shadow-none focus:ring-0 bg-transparent font-medium">
-              <SelectValue placeholder={t("Barcha kategoriyalar")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("Barcha kategoriyalar")}</SelectItem>
-              {!isLoadingCategories && categories?.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="w-full md:w-[200px] border-t md:border-t-0 md:border-l border-border/60 pl-0 md:pl-2">
-          <Select value={sortOrder} onValueChange={setSortOrder}>
-            <SelectTrigger className="h-11 border-0 shadow-none focus:ring-0 bg-transparent font-medium">
-              <SelectValue placeholder={t("Odatiy tartib")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="default">{t("Odatiy tartib")}</SelectItem>
-              <SelectItem value="price">{t("Arzonroq")}</SelectItem>
-              <SelectItem value="-price">{t("Qimmatroq")}</SelectItem>
-              <SelectItem value="name">{t("Nomi bo'yicha (A-Z)")}</SelectItem>
-              <SelectItem value="-name">{t("Nomi bo'yicha (Z-A)")}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
 
+        <div className="flex flex-col md:flex-row items-center gap-3 mb-12 bg-card p-3 md:p-2 rounded-2xl md:rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-border/60 max-w-5xl mx-auto">
+          {/* Search Bar */}
+          <div className="relative w-full flex-1 flex items-center md:mb-0 bg-muted/30 md:bg-transparent rounded-xl md:rounded-none">
+            <Search className="absolute left-3 h-5 w-5 text-muted-foreground" />
+            <Input 
+              placeholder={t("Mahsulotlarni qidirish...")}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 h-12 md:h-11 border-0 shadow-none focus-visible:ring-0 bg-transparent text-base"
+            />
+          </div>
+
+          {/* Filters Wrapper */}
+          <div className="flex flex-col md:flex-row w-full md:w-auto items-stretch md:items-center gap-3 md:gap-0 border-t md:border-t-0 md:border-l border-border/60 pt-3 md:pt-0">
+            {/* Category Select */}
+            <div className="w-full md:flex-1 md:w-[220px] md:pr-2 md:pl-2 bg-muted/30 md:bg-transparent rounded-xl md:rounded-none">
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="h-12 md:h-11 border-0 shadow-none focus:ring-0 bg-transparent font-medium w-full">
+                  <SelectValue placeholder={t("Barcha kategoriyalar")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("Barcha kategoriyalar")}</SelectItem>
+                  {categories?.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Sort Select */}
+            <div className="w-full md:flex-1 md:w-[200px] md:border-l border-border/60 md:pl-2 bg-muted/30 md:bg-transparent rounded-xl md:rounded-none">
+              <Select value={sortOrder} onValueChange={setSortOrder}>
+                <SelectTrigger className="h-12 md:h-11 border-0 shadow-none focus:ring-0 bg-transparent font-medium w-full">
+                  <SelectValue placeholder={t("Odatiy tartib")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">{t("Odatiy tartib")}</SelectItem>
+                  <SelectItem value="price">{t("Arzonroq")}</SelectItem>
+                  <SelectItem value="-price">{t("Qimmatroq")}</SelectItem>
+                  <SelectItem value="name">{t("Nomi bo'yicha (A-Z)")}</SelectItem>
+                  <SelectItem value="-name">{t("Nomi bo'yicha (Z-A)")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
       {isLoadingProducts ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
