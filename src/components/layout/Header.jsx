@@ -59,7 +59,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4 flex h-14 items-center justify-between">
+      <div className="container mx-auto px-4 flex h-16 items-center justify-between">
         {/* Left: Mobile Menu & Logo */}
         <div className="flex items-center gap-2 md:gap-0">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
@@ -208,7 +208,7 @@ export function Header() {
             <Button variant="ghost" size="icon" className="relative">
               <ShoppingCart className="h-5 w-5" />
               {cartItems.length > 0 && (
-                <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 rounded-full">
+                <Badge className="absolute -top-1.5 -right-2 h-5 w-5 flex items-center justify-center p-0 rounded-full">
                   {cartItems.length}
                 </Badge>
               )}

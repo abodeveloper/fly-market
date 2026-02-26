@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, CheckCircle2 } from 'lucide-react';
+import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, CheckCircle2, Package, Tag } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { handleApiError } from '@/utils/errorHandler';
@@ -24,11 +24,10 @@ export function Cart() {
   const [lastOrderDetails, setLastOrderDetails] = useState(null);
   const [lastCartSnapshot, setLastCartSnapshot] = useState(null);
 
-  // Fetch Cart from backend
   const { data: cartResponse, isLoading: isCartLoading } = useQuery({
     queryKey: ['cart'],
     queryFn: cartAPI.getCart,
-    enabled: isAuthenticated, // Only fetch if logged in
+    enabled: isAuthenticated,
   });
 
   const cartItems = cartResponse?.cartItems || [];
@@ -36,12 +35,8 @@ export function Cart() {
 
   const updateQuantityMutation = useMutation({
     mutationFn: (data) => cartAPI.updateCartItem(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
-    },
-    onError: (error) => {
-      handleApiError(error, t("Miqdorni yangilashda xatolik"));
-    }
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['cart'] }); },
+    onError: (error) => { handleApiError(error, t("Miqdorni yangilashda xatolik")); }
   });
 
   const removeItemMutation = useMutation({
@@ -50,9 +45,7 @@ export function Cart() {
       toast.info(t("Mahsulot savatdan olib tashlandi"));
       queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
-    onError: (error) => {
-      handleApiError(error, t("Olib tashlashda xatolik"));
-    }
+    onError: (error) => { handleApiError(error, t("Olib tashlashda xatolik")); }
   });
 
   const orderMutation = useMutation({
@@ -64,14 +57,13 @@ export function Cart() {
         orderDate: data?.orderDate,
         orderItems: data?.orderItems || []
       });
+      setLastCartSnapshot(cartItems);
       setShowOrderModal(true);
       toast.success(t("Buyurtma muvaffaqiyatli rasmiylashtirildi!"));
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       queryClient.invalidateQueries({ queryKey: ['my-orders'] });
     },
-    onError: (error) => {
-      handleApiError(error, t("Buyurtma berishda xatolik."));
-    }
+    onError: (error) => { handleApiError(error, t("Buyurtma berishda xatolik.")); }
   });
 
   const updateQuantity = (productId, currentQuantity, delta) => {
@@ -79,42 +71,40 @@ export function Cart() {
     updateQuantityMutation.mutate({ productId, quantity: newQuantity });
   };
 
-  const removeItem = (productId) => {
-    removeItemMutation.mutate({ productId });
-  };
+  const removeItem = (productId) => removeItemMutation.mutate({ productId });
 
   const handleCheckout = () => {
     if (!isAuthenticated) return setAuthModal('login');
     if (cartItems.length === 0) return toast.error(t("Savat bo'sh"));
-    
     setLastCartSnapshot(cartItems);
     orderMutation.mutate();
   };
 
+  // --- States ---
   if (!isAuthenticated) {
     return (
-      <div className="container mx-auto p-4 py-20 flex flex-col items-center justify-center text-center">
-        <div className="h-24 w-24 bg-muted rounded-full flex items-center justify-center mb-6 text-muted-foreground/50">
-          <ShoppingBag className="h-12 w-12" />
+      <div className="container mx-auto p-4 py-24 flex flex-col items-center justify-center text-center gap-6">
+        <div className="w-28 h-28 rounded-full bg-muted flex items-center justify-center text-muted-foreground/40">
+          <ShoppingBag className="w-14 h-14" />
         </div>
-        <h2 className="text-2xl font-bold tracking-tight mb-2">{t("Savatingizni ko'rish uchun tizimga kiring")}</h2>
-        <p className="text-muted-foreground mb-8 max-w-sm">
-          {t("Savatingizni ko'rish va boshqarish uchun tizimga kirishingiz kerak.")}
-        </p>
-        <Button size="lg" onClick={() => setAuthModal('login')}>{t("Kirish")}</Button>
+        <div>
+          <h2 className="text-2xl font-bold mb-2">{t("Savatingizni ko'rish uchun tizimga kiring")}</h2>
+          <p className="text-muted-foreground max-w-xs mx-auto">{t("Savatingizni ko'rish va boshqarish uchun tizimga kirishingiz kerak.")}</p>
+        </div>
+        <Button size="lg" className="h-12 px-8 rounded-xl" onClick={() => setAuthModal('login')}>{t("Kirish")}</Button>
       </div>
     );
   }
 
   if (isCartLoading) {
     return (
-      <div className="container mx-auto p-4 md:py-8 space-y-8">
-        <Skeleton className="h-10 w-48" />
+      <div className="container mx-auto p-4 md:py-8 space-y-6">
+        <Skeleton className="h-9 w-44" />
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
-            {[1, 2, 3].map(i => <Skeleton key={i} className="h-32 w-full" />)}
+            {[1, 2, 3].map(i => <Skeleton key={i} className="h-36 w-full rounded-2xl" />)}
           </div>
-          <div><Skeleton className="h-64 w-full" /></div>
+          <Skeleton className="h-72 w-full rounded-2xl" />
         </div>
       </div>
     );
@@ -125,64 +115,58 @@ export function Cart() {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="flex flex-col items-center gap-4 py-4 text-center">
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-full flex items-center justify-center shrink-0 mb-2">
-              <CheckCircle2 className="h-8 w-8" />
+            <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-full flex items-center justify-center shrink-0 ring-8 ring-green-100/50 dark:ring-green-900/20">
+              <CheckCircle2 className="h-10 w-10" />
             </div>
             <div>
-              <DialogTitle className="text-2xl mb-2">{t("Buyurtma tasdiqlandi!")}</DialogTitle>
-              <DialogDescription className="text-base">
-                {t("Xaridingiz uchun tashakkur.")}
-                {lastOrderDetails?.id && <div className="font-semibold text-foreground mt-2 bg-muted py-2 rounded-md">{t("Buyurtma")} ID: #{lastOrderDetails.id}</div>}
-              </DialogDescription>
+              <DialogTitle className="text-2xl mb-1">{t("Buyurtma tasdiqlandi!")}</DialogTitle>
+              <DialogDescription className="text-base">{t("Xaridingiz uchun tashakkur.")}</DialogDescription>
+              {lastOrderDetails?.id && (
+                <div className="mt-3 inline-flex items-center gap-2 bg-muted px-4 py-1.5 rounded-full text-sm font-semibold text-foreground">
+                  <Tag className="h-3.5 w-3.5" />
+                  {t("Buyurtma")} #{lastOrderDetails.id}
+                </div>
+              )}
             </div>
           </div>
         </DialogHeader>
-        <div className="py-2 space-y-4 text-sm mt-2 border-t pt-4">
-          <div className="flex justify-between text-muted-foreground mb-4">
+        <div className="border-t pt-4 space-y-4">
+          <div className="flex justify-between text-sm text-muted-foreground">
             <span>{t("Sana:")}</span>
             <span>{lastOrderDetails?.orderDate ? formatDateTime(lastOrderDetails.orderDate) : formatDateTime(new Date())}</span>
           </div>
-
-          <h4 className="font-semibold flex items-center gap-2 mb-2">
-            <ShoppingBag className="h-4 w-4 text-primary" /> {t("Xarid qilingan mahsulotlar")}
-          </h4>
-          
-          <div className="space-y-3 mb-4 max-h-[40vh] overflow-y-auto pr-2">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <Package className="h-4 w-4 text-primary" />
+            {t("Xarid qilingan mahsulotlar")}
+          </div>
+          <div className="space-y-3 max-h-[35vh] overflow-y-auto pr-1">
             {lastOrderDetails?.orderItems?.map((item, idx) => (
-              <div key={item.id || idx} className="flex justify-between items-start text-sm border-b pb-2 last:border-0 last:pb-0">
-                <div className="flex gap-3">
-                  <div className="w-10 h-10 bg-muted rounded flex items-center justify-center font-bold text-muted-foreground shrink-0 overflow-hidden">
-                    {item.product?.img_url ? (
-                      <img src={item.product.img_url} alt={item.product?.name} className="w-full h-full object-cover" />
-                    ) : (
-                      item.product?.name ? item.product.name.charAt(0) : 'P'
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-medium line-clamp-1">{item.product?.name || `Product ID: ${item.productId || item.product?.id}`}</p>
-                    <p className="text-muted-foreground">Qty: {item.quantity} x ${Number(item.price || item.product?.price || 0).toFixed(2)}</p>
-                  </div>
+              <div key={item.id || idx} className="flex items-center gap-3 text-sm bg-muted/50 rounded-xl p-2.5">
+                <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center font-bold text-muted-foreground shrink-0 overflow-hidden">
+                  {item.product?.img_url ? (
+                    <img src={item.product.img_url} alt={item.product?.name} className="w-full h-full object-cover" />
+                  ) : (
+                    item.product?.name?.charAt(0) || 'P'
+                  )}
                 </div>
-                <div className="font-semibold">
-                  ${(Number(item.price || item.product?.price || 0) * item.quantity).toFixed(2)}
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium line-clamp-1">{item.product?.name || `Product #${item.productId}`}</p>
+                  <p className="text-muted-foreground text-xs">{item.quantity} × {Number(item.price || item.product?.price || 0).toLocaleString()} so'm</p>
                 </div>
+                <span className="font-bold shrink-0">{(Number(item.price || item.product?.price || 0) * item.quantity).toLocaleString()} so'm</span>
               </div>
             ))}
           </div>
-
-          <div className="flex justify-between items-center text-muted-foreground bg-muted/50 p-3 rounded-md mt-4">
-            <span>{t("Jami to'langan summa")}</span>
-            <span className="font-bold text-foreground text-lg">${Number(lastOrderDetails?.totalAmount || 0).toFixed(2)}</span>
+          <div className="flex justify-between items-center bg-primary/5 border border-primary/10 p-4 rounded-xl">
+            <span className="text-sm font-semibold">{t("Jami to'langan summa")}</span>
+            <span className="font-black text-xl text-primary">{Number(lastOrderDetails?.totalAmount || 0).toLocaleString()} so'm</span>
           </div>
         </div>
-        <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
-          <Button variant="outline" className="w-full sm:w-auto" onClick={() => setShowOrderModal(false)}>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button variant="outline" className="w-full sm:w-auto rounded-xl" onClick={() => setShowOrderModal(false)}>
             {t("Yopish")}
           </Button>
-          <Button className="w-full sm:w-auto bg-primary text-primary-foreground" onClick={() => {
-            setShowOrderModal(false);
-            navigate('/orders');
-          }}>
+          <Button className="w-full sm:w-auto rounded-xl" onClick={() => { setShowOrderModal(false); navigate('/orders'); }}>
             {t("Barcha buyurtmalarni ko'rish")}
           </Button>
         </DialogFooter>
@@ -193,17 +177,17 @@ export function Cart() {
   if (displayItems.length === 0) {
     return (
       <>
-        <div className="container mx-auto p-4 py-20 flex flex-col items-center justify-center text-center">
-          <div className="h-24 w-24 bg-muted rounded-full flex items-center justify-center mb-6 text-muted-foreground/50">
-            <ShoppingBag className="h-12 w-12" />
+        <div className="container mx-auto p-4 py-24 flex flex-col items-center justify-center text-center gap-6">
+          <div className="w-28 h-28 rounded-full bg-muted flex items-center justify-center text-muted-foreground/40">
+            <ShoppingBag className="w-14 h-14" />
           </div>
-          <h2 className="text-2xl font-bold tracking-tight mb-2">{t("Savatingiz bo'sh")}</h2>
-          <p className="text-muted-foreground mb-8 max-w-sm">
-            {t("Siz hali savatga hech narsa qo'shmagan ko'rinasiz. Buni o'zgartiramiz!")}
-          </p>
-          <Link to="/">
-            <Button size="lg">{t("Xaridni boshlash")}</Button>
-          </Link>
+          <div>
+            <h2 className="text-2xl font-bold mb-2">{t("Savatingiz bo'sh")}</h2>
+            <p className="text-muted-foreground max-w-xs mx-auto">{t("Siz hali savatga hech narsa qo'shmagan ko'rinasiz. Buni o'zgartiramiz!")}</p>
+          </div>
+          <Button size="lg" className="h-12 px-8 rounded-xl" asChild>
+            <Link to="/">{t("Xaridni boshlash")}</Link>
+          </Button>
         </div>
         {renderOrderModal()}
       </>
@@ -211,39 +195,50 @@ export function Cart() {
   }
 
   const subtotal = displayItems.reduce((sum, item) => sum + (Number(item.product?.price || 0) * item.quantity), 0);
-  const total = subtotal;
 
   return (
-    <div className="container mx-auto p-4 md:py-8">
-      <h1 className="text-3xl font-bold tracking-tight mb-8">{t("Xarid savati")}</h1>
-      
-      <div className="grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-4">
+    <div className="container mx-auto px-4 py-8">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight">{t("Xarid savati")}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{displayItems.length} {t("ta mahsulot")}</p>
+        </div>
+        <Badge variant="secondary" className="text-sm px-3 py-1.5 rounded-full">
+          {displayItems.reduce((sum, i) => sum + i.quantity, 0)} {t("dona")}
+        </Badge>
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-8 items-start">
+        {/* Cart Items */}
+        <div className="lg:col-span-2 space-y-3">
           {displayItems.map((item) => (
-            <Card key={item.id} className="flex flex-col sm:flex-row overflow-hidden">
-              <div className="w-full sm:w-32 h-32 bg-muted flex-shrink-0 flex items-center justify-center text-4xl font-bold text-primary/20 overflow-hidden">
+            <div key={item.id} className="flex gap-4 bg-card border border-border/50 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
+              {/* Image */}
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-muted flex-shrink-0 overflow-hidden flex items-center justify-center text-3xl font-black text-muted-foreground/10">
                 {item.product?.img_url ? (
                   <img src={item.product.img_url} alt={item.product?.name} className="w-full h-full object-cover" />
                 ) : (
-                  item.product?.name ? item.product.name.charAt(0) : 'P'
+                  item.product?.name?.charAt(0) || 'P'
                 )}
               </div>
-              <div className="flex-1 p-4 flex flex-col">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-semibold text-lg line-clamp-1">{item.product?.name || t("Noma'lum mahsulot")}</h3>
-                  <div className="font-bold text-lg">
-                    ${(Number(item.product?.price || 0) * item.quantity).toFixed(2)}
-                  </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                <div>
+                  <h3 className="font-bold text-base line-clamp-1 mb-0.5">{item.product?.name || t("Noma'lum mahsulot")}</h3>
+                  <p className="text-xs text-muted-foreground">
+                    {Number(item.product?.price || 0).toLocaleString('uz-UZ')} {t("so'm")} / {t("dona")}
+                  </p>
                 </div>
-                <div className="text-sm text-muted-foreground mb-4">
-                  ${Number(item.product?.price || 0).toFixed(2)} / {t("dona")}
-                </div>
-                <div className="mt-auto flex items-center justify-between">
+
+                <div className="flex items-center justify-between gap-3 mt-3 flex-wrap">
+                  {/* Quantity control */}
                   <div className="flex items-center p-1 bg-muted/50 rounded-2xl border border-border/50 backdrop-blur-sm shadow-sm">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 shrink-0 rounded-xl hover:bg-background hover:shadow-sm disabled:opacity-50" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 rounded-xl hover:bg-background hover:shadow-sm disabled:opacity-50"
                       onClick={() => updateQuantity(item.product.id, item.quantity, -1)}
                       disabled={updateQuantityMutation.isPending || item.quantity <= 1}
                     >
@@ -253,10 +248,10 @@ export function Cart() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span tabIndex={0} className="inline-block">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 shrink-0 rounded-xl hover:bg-background hover:shadow-sm" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 shrink-0 rounded-xl hover:bg-background hover:shadow-sm"
                             onClick={() => updateQuantity(item.product.id, item.quantity, 1)}
                             disabled={updateQuantityMutation.isPending || item.quantity >= item.product?.stock}
                           >
@@ -271,56 +266,61 @@ export function Cart() {
                       )}
                     </Tooltip>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10" 
-                    onClick={() => removeItem(item.product.id)}
-                    disabled={removeItemMutation.isPending}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+
+                  {/* Right: total + trash */}
+                  <div className="flex items-center gap-3">
+                    <span className="font-black text-base text-foreground">
+                      {(Number(item.product?.price || 0) * item.quantity).toLocaleString('uz-UZ')} {t("so'm")}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl"
+                      onClick={() => removeItem(item.product.id)}
+                      disabled={removeItemMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </Card>
+            </div>
           ))}
         </div>
-        
-        <div>
-          <Card className="sticky top-24 bg-card/50 backdrop-blur border-primary/10 shadow-lg">
-            <CardHeader>
-              <CardTitle>{t("Buyurtma xulosasi")}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+
+        {/* Order Summary */}
+        <div className="sticky top-24">
+          <div className="bg-card border border-border/50 rounded-2xl shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-border/50">
+              <h2 className="font-bold text-lg">{t("Buyurtma xulosasi")}</h2>
+            </div>
+            <div className="p-5 space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("Oraliq summa")} ({displayItems.length} {t("ta mahsulot")})</span>
-                <span className="font-medium">${subtotal.toFixed(2)}</span>
+                <span className="font-semibold">{subtotal.toLocaleString('uz-UZ')} {t("so'm")}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("Yetkazib berish")}</span>
-                <span className="font-medium text-green-600">{t("Bepul")}</span>
+                <span className="font-semibold text-green-600">{t("Bepul")}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t("Soliq")}</span>
-                <span className="font-medium">$0.00</span>
+              <Separator className="my-1" />
+              <div className="flex justify-between items-center pt-1">
+                <span className="font-bold text-base">{t("Jami summa")}</span>
+                <span className="font-black text-2xl text-primary">{subtotal.toLocaleString('uz-UZ')}<span className="text-sm font-semibold ml-1 text-muted-foreground">{t("so'm")}</span></span>
               </div>
-              <Separator />
-              <div className="flex justify-between items-center text-lg font-bold">
-                <span>{t("Jami summa")}</span>
-                <span className="text-primary">${total.toFixed(2)}</span>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                className="w-full text-lg h-12" 
+            </div>
+            <div className="p-5 pt-0">
+              <Button
+                className="w-full h-12 text-base font-bold rounded-xl"
                 onClick={handleCheckout}
                 disabled={orderMutation.isPending || cartItems.length === 0}
               >
                 {orderMutation.isPending ? t("Jarayonda...") : t("Xaridni rasmiylashtirish")}
                 {!orderMutation.isPending && <ArrowRight className="ml-2 h-5 w-5" />}
               </Button>
-            </CardFooter>
-          </Card>
+              <p className="text-center text-xs text-muted-foreground mt-3">{t("Bepul yetkazib berish barcha buyurtmalar uchun.")}</p>
+            </div>
+          </div>
         </div>
       </div>
 
