@@ -9,6 +9,11 @@ import App from './App.jsx';
 // Create a client
 const queryClient = new QueryClient();
 
+// Brauzerning refresh qilganda scroll pozitsiyasini tiklashini o'chirish
+if ('scrollRestoration' in window.history) {
+  window.history.scrollRestoration = 'manual';
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>

@@ -13,6 +13,7 @@ import { handleApiError } from '@/utils/errorHandler';
 import { Minus, Plus, Trash2, ShoppingCart, Search, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { formatPrice } from '@/utils/formatPrice';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
 
@@ -279,9 +280,8 @@ export function ProductsSection() {
                 {/* Price */}
                 <div className="mt-auto pt-1 flex items-baseline gap-1.5">
                   <span className="text-sm font-extrabold text-foreground">
-                    {Number(product.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {formatPrice(product.price, t)}
                   </span>
-                  <span className="text-xs font-semibold text-muted-foreground">{t("so'm")}</span>
                 </div>
               </CardContent>
               <CardFooter className="p-4 pt-0 mt-auto">

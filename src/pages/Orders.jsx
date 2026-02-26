@@ -6,6 +6,7 @@ import { orderAPI } from '@/services/api';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Package, CheckCircle2, Clock, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { formatDateTime } from '@/utils/formatDate';
+import { formatPrice } from '@/utils/formatPrice';
 import { useTranslation } from 'react-i18next';
 
 function StatusBadge({ status, t }) {
@@ -102,7 +103,7 @@ export function Orders() {
                         </div>
                         {/* Price */}
                         <span className="text-sm font-bold shrink-0">
-                          {(Number(item.price || 0) * item.quantity).toLocaleString('uz-UZ')} {t("so'm")}
+                          {formatPrice((item.price || 0) * item.quantity, t)}
                         </span>
                       </Link>
                     ))
@@ -115,7 +116,7 @@ export function Orders() {
                 <div className="flex justify-between items-center px-4 py-3 bg-muted/20 border-t border-border/50">
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("Jami summa")}</span>
                   <span className="font-black text-base text-primary">
-                    {total.toLocaleString('uz-UZ')} <span className="text-xs font-semibold text-muted-foreground">{t("so'm")}</span>
+                    {formatPrice(total, t)}
                   </span>
                 </div>
               </div>

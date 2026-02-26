@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from '../common/ThemeToggle';
@@ -27,17 +27,20 @@ export function Header() {
     enabled: isAuthenticated,
   });
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    // Boshqa sahifada bo'lsa — active holatni tozala
     if (location.pathname !== '/') {
+      setActiveSection('');
       return;
     }
 
     const handleScroll = () => {
       const sections = ['home', 'products', 'about', 'contact', 'faq'];
-      const scrollPosition = window.scrollY + 200; // offset
+      const scrollPosition = window.scrollY + 200;
 
       for (const section of sections) {
         const element = document.getElementById(section);
@@ -51,9 +54,36 @@ export function Header() {
     };
 
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // initial check
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, [location.pathname]);
+
+  // Boshqa sahifadan kelib, section ga scroll qilish
+  useEffect(() => {
+    if (location.pathname === '/') {
+      const target = location.state?.scrollTo;
+      if (target) {
+        // State ni tozala (orqaga bossanda qayta scroll qilmasligi uchun)
+        window.history.replaceState({}, '');
+        setTimeout(() => {
+          const el = document.getElementById(target);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
+    }
+  }, [location.pathname, location.state]);
+
+  const handleSectionClick = (e, sectionId) => {
+    e.preventDefault();
+    if (location.pathname === '/') {
+      // Shu sahifadamiz — to'g'ridan scroll (scroll-mt-* CSS ishlaydi)
+      const el = document.getElementById(sectionId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      // Boshqa sahifadamiz — state orqali home ga o'tish
+      navigate('/', { state: { scrollTo: sectionId } });
+    }
+  };
 
   const cartItems = cartData?.cartItems || [];
 
@@ -91,16 +121,7 @@ export function Header() {
                     href={`/#${item.id}`}
                     onClick={(e) => { 
                       setIsMobileMenuOpen(false);
-                      if (window.location.pathname === '/') { 
-                        // Kichik kechikish bilan native anchor urilishi uchun
-                        setTimeout(() => {
-                           const el = document.getElementById(item.id);
-                           if(el) {
-                             const y = el.getBoundingClientRect().top + window.scrollY - 80;
-                             window.scrollTo({ top: y, behavior: 'smooth' });
-                           }
-                        }, 400);
-                      }
+                      handleSectionClick(e, item.id);
                     }}
                     className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-base font-bold transition-all duration-300 ${
                       activeSection === item.id 
@@ -180,12 +201,7 @@ export function Header() {
             <a 
               key={item.id}
               href={`/#${item.id}`}
-              onClick={(e) => { 
-                if (window.location.pathname === '/') { 
-                  e.preventDefault(); 
-                  document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' }); 
-                }
-              }}
+              onClick={(e) => handleSectionClick(e, item.id)}
               className={`relative flex items-center h-full text-sm font-medium transition-colors hover:text-primary ${
                 activeSection === item.id 
                   ? 'text-primary after:absolute after:-bottom-[1px] after:left-0 after:w-full after:h-[3px] after:bg-primary' 

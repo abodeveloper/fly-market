@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 export function AboutSection() {
   const { t } = useTranslation();
   return (
-    <section id="about" className="py-20 border-t scroll-mt-12">
+    <section id="about" className="py-20 border-t scroll-mt-16">
       <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto px-4">
         <div className="space-y-6">
           <h2 className="text-3xl md:text-5xl font-black tracking-tight text-foreground">{t("Biz haqimizda")}</h2>

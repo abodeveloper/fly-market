@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, CheckCircle2, Package, Tag } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatPrice } from '@/utils/formatPrice';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { handleApiError } from '@/utils/errorHandler';
 import useAuthStore from '@/store/useAuthStore';
@@ -151,15 +152,15 @@ export function Cart() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium line-clamp-1">{item.product?.name || `Product #${item.productId}`}</p>
-                  <p className="text-muted-foreground text-xs">{item.quantity} × {Number(item.price || item.product?.price || 0).toLocaleString()} so'm</p>
+                  <p className="text-muted-foreground text-xs">{item.quantity} × {formatPrice(item.price || item.product?.price || 0, t)}</p>
                 </div>
-                <span className="font-bold shrink-0">{(Number(item.price || item.product?.price || 0) * item.quantity).toLocaleString()} so'm</span>
+                <span className="font-bold shrink-0">{formatPrice((item.price || item.product?.price || 0) * item.quantity, t)}</span>
               </div>
             ))}
           </div>
           <div className="flex justify-between items-center bg-primary/5 border border-primary/10 p-4 rounded-xl">
             <span className="text-sm font-semibold">{t("Jami to'langan summa")}</span>
-            <span className="font-black text-xl text-primary">{Number(lastOrderDetails?.totalAmount || 0).toLocaleString()} so'm</span>
+            <span className="font-black text-xl text-primary">{formatPrice(lastOrderDetails?.totalAmount || 0, t)}</span>
           </div>
         </div>
         <DialogFooter className="flex-col sm:flex-row gap-2">
@@ -228,7 +229,7 @@ export function Cart() {
                 <div>
                   <h3 className="font-bold text-base line-clamp-1 mb-0.5">{item.product?.name || t("Noma'lum mahsulot")}</h3>
                   <p className="text-xs text-muted-foreground">
-                    {Number(item.product?.price || 0).toLocaleString('uz-UZ')} {t("so'm")} / {t("dona")}
+                    {formatPrice(item.product?.price || 0, t)} / {t("dona")}
                   </p>
                 </div>
 
@@ -270,7 +271,7 @@ export function Cart() {
                   {/* Right: total + trash */}
                   <div className="flex items-center gap-3">
                     <span className="font-black text-base text-foreground">
-                      {(Number(item.product?.price || 0) * item.quantity).toLocaleString('uz-UZ')} {t("so'm")}
+                      {formatPrice((item.product?.price || 0) * item.quantity, t)}
                     </span>
                     <Button
                       variant="ghost"
@@ -297,7 +298,7 @@ export function Cart() {
             <div className="p-5 space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("Oraliq summa")} ({displayItems.length} {t("ta mahsulot")})</span>
-                <span className="font-semibold">{subtotal.toLocaleString('uz-UZ')} {t("so'm")}</span>
+                <span className="font-semibold">{formatPrice(subtotal, t)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("Yetkazib berish")}</span>
@@ -306,7 +307,7 @@ export function Cart() {
               <Separator className="my-1" />
               <div className="flex justify-between items-center pt-1">
                 <span className="font-bold text-base">{t("Jami summa")}</span>
-                <span className="font-black text-2xl text-primary">{subtotal.toLocaleString('uz-UZ')}<span className="text-sm font-semibold ml-1 text-muted-foreground">{t("so'm")}</span></span>
+                <span className="font-black text-2xl text-primary">{formatPrice(subtotal, t)}</span>
               </div>
             </div>
             <div className="p-5 pt-0">

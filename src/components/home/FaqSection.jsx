@@ -22,7 +22,7 @@ export function FaqSection() {
   ];
 
   return (
-    <section id="faq" className="w-full py-20 border-t bg-muted/30 scroll-mt-12">
+    <section id="faq" className="w-full py-20 border-t bg-muted/30 scroll-mt-16">
       <div className="max-w-3xl mx-auto px-4 space-y-10">
         <div className="text-center space-y-4">
           <h2 className="text-3xl md:text-5xl font-black tracking-tight text-foreground">{t("Ko'p so'raladigan savollar")}</h2>

@@ -1,6 +1,7 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { formatPrice } from '@/utils/formatPrice';
 
 export function ProductInfo({ product, reviews, isLoading }) {
   const { t } = useTranslation();
@@ -39,9 +40,8 @@ export function ProductInfo({ product, reviews, isLoading }) {
         
         <div className="flex items-baseline gap-2 text-primary">
           <span className="text-4xl font-black tracking-tighter">
-            {Number(product?.price).toLocaleString('uz-UZ')}
+            {formatPrice(product?.price, t)}
           </span>
-          <span className="text-lg font-bold text-muted-foreground uppercase">{t("so'm")}</span>
         </div>
       </div>
 

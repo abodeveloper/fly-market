@@ -53,7 +53,7 @@ export function ContactSection() {
   };
 
   return (
-    <section id="contact" className="py-20 border-t scroll-mt-12">
+    <section id="contact" className="py-20 border-t scroll-mt-16">
       <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-12">
         <div className="space-y-8">
           <div>

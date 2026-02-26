@@ -27,7 +27,7 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 gap-1.5 px-3 relative">
+        <Button variant="outline" size="sm" className="h-9 gap-1.5 px-3 relative">
           <Globe className="h-4 w-4" />
           <span className="text-xs font-semibold">{getLanguageLabel()}</span>
         </Button>
