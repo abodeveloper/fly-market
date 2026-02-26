@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,10 +11,11 @@ import { toast } from 'sonner';
 import { formatPrice } from '@/utils/formatPrice';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { handleApiError } from '@/utils/errorHandler';
-import useAuthStore from '@/store/useAuthStore';
-import { orderAPI, cartAPI } from '@/services/api';
+import { orderAPI } from '@/services/api';
 import { formatDateTime } from '@/utils/formatDate';
 import { useTranslation } from 'react-i18next';
+import { useCart } from '@/hooks/useCart';
+import useAuthStore from '@/store/useAuthStore';
 
 export function Cart() {
   const { t } = useTranslation();
@@ -25,29 +26,8 @@ export function Cart() {
   const [lastOrderDetails, setLastOrderDetails] = useState(null);
   const [lastCartSnapshot, setLastCartSnapshot] = useState(null);
 
-  const { data: cartResponse, isLoading: isCartLoading } = useQuery({
-    queryKey: ['cart'],
-    queryFn: cartAPI.getCart,
-    enabled: isAuthenticated,
-  });
-
-  const cartItems = cartResponse?.cartItems || [];
+  const { cartItems, isCartLoading, updateQuantity, removeItem, isUpdating, isRemoving } = useCart();
   const displayItems = (showOrderModal && lastCartSnapshot) ? lastCartSnapshot : cartItems;
-
-  const updateQuantityMutation = useMutation({
-    mutationFn: (data) => cartAPI.updateCartItem(data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['cart'] }); },
-    onError: (error) => { handleApiError(error, t("Miqdorni yangilashda xatolik")); }
-  });
-
-  const removeItemMutation = useMutation({
-    mutationFn: (data) => cartAPI.removeFromCart(data),
-    onSuccess: () => {
-      toast.info(t("Mahsulot savatdan olib tashlandi"));
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
-    },
-    onError: (error) => { handleApiError(error, t("Olib tashlashda xatolik")); }
-  });
 
   const orderMutation = useMutation({
     mutationFn: orderAPI.placeOrder,
@@ -67,15 +47,7 @@ export function Cart() {
     onError: (error) => { handleApiError(error, t("Buyurtma berishda xatolik.")); }
   });
 
-  const updateQuantity = (productId, currentQuantity, delta) => {
-    const newQuantity = Math.max(1, currentQuantity + delta);
-    updateQuantityMutation.mutate({ productId, quantity: newQuantity });
-  };
-
-  const removeItem = (productId) => removeItemMutation.mutate({ productId });
-
   const handleCheckout = () => {
-    if (!isAuthenticated) return setAuthModal('login');
     if (cartItems.length === 0) return toast.error(t("Savat bo'sh"));
     setLastCartSnapshot(cartItems);
     orderMutation.mutate();
@@ -241,7 +213,7 @@ export function Cart() {
                       size="icon"
                       className="h-8 w-8 shrink-0 rounded-xl hover:bg-background hover:shadow-sm disabled:opacity-50"
                       onClick={() => updateQuantity(item.product.id, item.quantity, -1)}
-                      disabled={updateQuantityMutation.isPending || item.quantity <= 1}
+                      disabled={isUpdating || item.quantity <= 1}
                     >
                       <Minus className="h-4 w-4" />
                     </Button>
@@ -254,7 +226,7 @@ export function Cart() {
                             size="icon"
                             className="h-8 w-8 shrink-0 rounded-xl hover:bg-background hover:shadow-sm"
                             onClick={() => updateQuantity(item.product.id, item.quantity, 1)}
-                            disabled={updateQuantityMutation.isPending || item.quantity >= item.product?.stock}
+                            disabled={isUpdating || item.quantity >= item.product?.stock}
                           >
                             <Plus className="h-4 w-4" />
                           </Button>
@@ -278,7 +250,7 @@ export function Cart() {
                       size="icon"
                       className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl"
                       onClick={() => removeItem(item.product.id)}
-                      disabled={removeItemMutation.isPending}
+                      disabled={isRemoving}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

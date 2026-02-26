@@ -1,33 +1,27 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { productAPI, categoryAPI, cartAPI } from '@/services/api';
-import useAuthStore from '@/store/useAuthStore';
+import { useQuery } from '@tanstack/react-query';
+import { productAPI, categoryAPI } from '@/services/api';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
-import { handleApiError } from '@/utils/errorHandler';
 import { Minus, Plus, Trash2, ShoppingCart, Search, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatPrice } from '@/utils/formatPrice';
+import { useCart } from '@/hooks/useCart';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
 
 export function ProductsSection() {
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
-  const { isAuthenticated, setAuthModal } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortOrder, setSortOrder] = useState('default');
-  
-  const plugin = useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: false })
-  );
+
+  const plugin = useRef(Autoplay({ delay: 3000, stopOnInteraction: false }));
 
   const { data: categories, isLoading: isLoadingCategories } = useQuery({
     queryKey: ['categories'],
@@ -36,71 +30,17 @@ export function ProductsSection() {
 
   const { data: productsData, isLoading: isLoadingProducts } = useQuery({
     queryKey: ['products', { sort: sortOrder, categoryId: selectedCategory, productName: searchTerm }],
-    queryFn: () => productAPI.getProducts({ 
-      sort: sortOrder === 'default' ? '' : sortOrder, 
-      categoryId: selectedCategory === 'all' ? '' : selectedCategory, 
-      productName: searchTerm 
+    queryFn: () => productAPI.getProducts({
+      sort: sortOrder === 'default' ? '' : sortOrder,
+      categoryId: selectedCategory === 'all' ? '' : selectedCategory,
+      productName: searchTerm,
     }),
   });
 
-  const { data: cartData } = useQuery({
-    queryKey: ['cart'],
-    queryFn: cartAPI.getCart,
-    enabled: isAuthenticated,
-  });
-  const cartItems = cartData?.cartItems || [];
-
-  const addToCartMutation = useMutation({
-    mutationFn: (productId) => cartAPI.addToCart({ productId }),
-    onSuccess: (_, productId) => {
-      const addedProduct = productsData?.find(p => p.id === productId);
-      toast.success(`${addedProduct?.name || 'Product'} added to cart!`);
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
-    },
-    onError: (error) => {
-      if (error.response?.status === 401) {
-        toast.error(t("Savatga narsa qo'shish uchun tizimga kiring."));
-      } else {
-        handleApiError(error, t("Savatga qo'shishda xatolik"));
-      }
-    }
-  });
-
-  const updateQuantityMutation = useMutation({
-    mutationFn: (data) => cartAPI.updateCartItem(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
-    },
-    onError: (error) => {
-      handleApiError(error, t("Miqdorni yangilashda xatolik"));
-    }
-  });
-
-  const removeItemMutation = useMutation({
-    mutationFn: (data) => cartAPI.removeFromCart(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
-    },
-    onError: (error) => {
-      handleApiError(error, t("Olib tashlashda xatolik"));
-    }
-  });
-
-  const updateQuantity = (productId, currentQuantity, delta) => {
-    const newQuantity = Math.max(1, currentQuantity + delta);
-    updateQuantityMutation.mutate({ productId, quantity: newQuantity });
-  };
-
-  const removeItem = (productId) => {
-    removeItemMutation.mutate({ productId });
-  };
-
-  const handleAddToCart = (product) => {
-    if (!isAuthenticated) return setAuthModal('login');
-    addToCartMutation.mutate(product.id);
-  };
+  const { cartItems, addToCart, updateQuantity, removeItem, getCartItem, isAdding, isUpdating, isRemoving } = useCart();
 
   const products = productsData || [];
+
 
   return (
     <section id="products" className="scroll-mt-16 pt-4 pb-16">
@@ -298,7 +238,7 @@ export function ProductsSection() {
                               size="icon"
                               className="h-7 w-7 shrink-0 rounded-lg text-muted-foreground hover:text-foreground hover:bg-background hover:shadow-sm disabled:opacity-50" 
                               onClick={() => updateQuantity(product.id, cartItem.quantity, -1)}
-                              disabled={cartItem.quantity <= 1 || updateQuantityMutation.isPending}
+                              disabled={cartItem.quantity <= 1 || isUpdating}
                             >
                               <Minus className="h-4 w-4" />
                             </Button>
@@ -311,7 +251,7 @@ export function ProductsSection() {
                                     size="icon"
                                     className="h-7 w-7 shrink-0 rounded-lg text-muted-foreground hover:text-foreground hover:bg-background hover:shadow-sm" 
                                     onClick={() => updateQuantity(product.id, cartItem.quantity, 1)}
-                                    disabled={updateQuantityMutation.isPending || cartItem.quantity >= product.stock}
+                                    disabled={isUpdating || cartItem.quantity >= product.stock}
                                   >
                                     <Plus className="h-4 w-4" />
                                   </Button>
@@ -332,7 +272,7 @@ export function ProductsSection() {
                               size="icon"
                               className="h-8 w-10 shrink-0 text-destructive border-transparent hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive transition-colors focus:ring-0 rounded-lg shadow-sm bg-muted/50"
                               onClick={() => removeItem(product.id)}
-                              disabled={removeItemMutation.isPending}
+                              disabled={isRemoving}
                               title={t("Savatdan olib tashlash")}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -353,8 +293,8 @@ export function ProductsSection() {
                     return (
                       <Button 
                         className="w-full h-10 bg-zinc-950 hover:bg-zinc-800 text-white font-semibold rounded-xl shadow-sm transition-all duration-200 mt-1" 
-                        onClick={() => handleAddToCart(product)} 
-                        disabled={product.stock === 0 || addToCartMutation.isPending}
+                        onClick={() => addToCart(product.id)} 
+                        disabled={product.stock === 0 || isAdding}
                       >
                         <ShoppingCart className="mr-2 h-4 w-4" />
                         {product.stock === 0 ? t('Sotuvda yo\'q') : t("Savatga qo'shish")}
