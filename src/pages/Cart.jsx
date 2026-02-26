@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { handleApiError } from '@/utils/errorHandler';
 import useAuthStore from '@/store/useAuthStore';
 import { orderAPI, cartAPI } from '@/services/api';
@@ -238,26 +239,37 @@ export function Cart() {
                   ${Number(item.product?.price || 0).toFixed(2)} / {t("dona")}
                 </div>
                 <div className="mt-auto flex items-center justify-between">
-                  <div className="flex items-center space-x-2 border rounded-md w-fit">
+                  <div className="flex items-center p-1 bg-muted/50 rounded-2xl border border-border/50 backdrop-blur-sm shadow-sm">
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="h-8 w-8 rounded-none" 
+                      className="h-8 w-8 shrink-0 rounded-xl hover:bg-background hover:shadow-sm disabled:opacity-50" 
                       onClick={() => updateQuantity(item.product.id, item.quantity, -1)}
                       disabled={updateQuantityMutation.isPending || item.quantity <= 1}
                     >
-                      <Minus className="h-3 w-3" />
+                      <Minus className="h-4 w-4" />
                     </Button>
-                    <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 rounded-none" 
-                      onClick={() => updateQuantity(item.product.id, item.quantity, 1)}
-                      disabled={updateQuantityMutation.isPending}
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
+                    <span className="w-8 text-center font-bold text-sm select-none">{item.quantity}</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span tabIndex={0} className="inline-block">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 shrink-0 rounded-xl hover:bg-background hover:shadow-sm" 
+                            onClick={() => updateQuantity(item.product.id, item.quantity, 1)}
+                            disabled={updateQuantityMutation.isPending || item.quantity >= item.product?.stock}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      {item.quantity >= item.product?.stock && (
+                        <TooltipContent side="top">
+                          <p>{t("Sotuvda boshqa qolmadi")}</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
                   </div>
                   <Button 
                     variant="ghost" 

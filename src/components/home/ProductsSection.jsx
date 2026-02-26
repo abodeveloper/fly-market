@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { handleApiError } from '@/utils/errorHandler';
-import { Minus, Plus, Trash2, ShoppingCart, Search } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingCart, Search, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
 
@@ -236,8 +237,30 @@ export function ProductsSection() {
           {products.map((product) => (
             <Card key={product.id} className="group flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-lg border-border/50 bg-card rounded-2xl p-0 gap-0">
               <div className="aspect-[16/10] bg-muted/50 relative flex items-center justify-center overflow-hidden p-4">
+                {/* Category badge - top left */}
                 <div className="absolute top-3 left-3 z-20 bg-background/90 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase shadow-sm text-foreground">
                   {product.category?.name || `Category ${product.categoryId}`}
+                </div>
+                {/* Rating badge - top right */}
+                {(() => {
+                  const reviews = product.reviews || [];
+                  const avg = reviews.length
+                    ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+                    : null;
+                  return avg ? (
+                    <div className="absolute top-3 right-3 z-20 flex items-center gap-1 bg-background/90 backdrop-blur-md px-2 py-1 rounded-md shadow-sm">
+                      <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
+                      <span className="text-[11px] font-bold leading-none text-foreground">{avg}</span>
+                      <span className="text-[10px] text-muted-foreground leading-none">({reviews.length})</span>
+                    </div>
+                  ) : null;
+                })()}
+                {/* Stock badge - bottom right */}
+                <div className={`absolute bottom-3 right-3 z-20 flex items-center gap-1 bg-background/90 backdrop-blur-md px-2 py-1 rounded-md shadow-sm`}>
+                  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${product.stock > 0 ? 'bg-green-500' : 'bg-destructive'}`} />
+                  <span className={`text-[10px] font-semibold leading-none ${product.stock > 0 ? 'text-green-600 dark:text-green-400' : 'text-destructive'}`}>
+                    {product.stock > 0 ? `${product.stock} ${t('dona')}` : t("Sotuvda yo'q")}
+                  </span>
                 </div>
                 <Link to={`/product/${product.id}`} className="absolute inset-0 z-10 flex items-center justify-center text-6xl font-black text-foreground/10 group-hover:scale-110 transition-transform duration-500">
                   {product.img_url ? (
@@ -248,11 +271,14 @@ export function ProductsSection() {
                 </Link>
               </div>
               <CardContent className="p-4 flex-1 flex flex-col gap-1.5">
+                {/* Product Name */}
                 <Link to={`/product/${product.id}`} className="hover:underline">
                   <CardTitle className="line-clamp-1 text-lg font-bold text-foreground tracking-tight">{product.name}</CardTitle>
                 </Link>
+
+                {/* Price */}
                 <div className="mt-auto pt-1 flex items-baseline gap-1.5">
-                  <span className="text-xl font-extrabold text-foreground">
+                  <span className="text-sm font-extrabold text-foreground">
                     {Number(product.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                   <span className="text-xs font-semibold text-muted-foreground">{t("so'm")}</span>
@@ -266,24 +292,37 @@ export function ProductsSection() {
                       return (
                         <div className="flex flex-col gap-2 w-full">
                           {/* Quantity UI */}
-                          <div className="flex items-center justify-between w-full h-8 border rounded-lg overflow-hidden bg-background shadow-sm">
+                          <div className="flex items-center p-1 bg-muted/50 rounded-xl border border-border/50 backdrop-blur-sm shadow-sm w-full">
                             <Button 
                               variant="ghost" 
-                              className="h-full rounded-none px-3 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-50" 
+                              size="icon"
+                              className="h-7 w-7 shrink-0 rounded-lg text-muted-foreground hover:text-foreground hover:bg-background hover:shadow-sm disabled:opacity-50" 
                               onClick={() => updateQuantity(product.id, cartItem.quantity, -1)}
                               disabled={cartItem.quantity <= 1 || updateQuantityMutation.isPending}
                             >
                               <Minus className="h-4 w-4" />
                             </Button>
-                            <span className="flex-1 text-center text-sm font-bold">{cartItem.quantity}</span>
-                            <Button 
-                              variant="ghost" 
-                              className="h-full rounded-none px-3 text-muted-foreground hover:text-foreground hover:bg-muted" 
-                              onClick={() => updateQuantity(product.id, cartItem.quantity, 1)}
-                              disabled={updateQuantityMutation.isPending}
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
+                            <span className="flex-1 text-center text-xs font-bold">{cartItem.quantity}</span>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span tabIndex={0} className="inline-block">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    className="h-7 w-7 shrink-0 rounded-lg text-muted-foreground hover:text-foreground hover:bg-background hover:shadow-sm" 
+                                    onClick={() => updateQuantity(product.id, cartItem.quantity, 1)}
+                                    disabled={updateQuantityMutation.isPending || cartItem.quantity >= product.stock}
+                                  >
+                                    <Plus className="h-4 w-4" />
+                                  </Button>
+                                </span>
+                              </TooltipTrigger>
+                              {cartItem.quantity >= product.stock && (
+                                <TooltipContent side="top">
+                                  <p>{t("Sotuvda boshqa qolmadi")}</p>
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
                           </div>
                           
                           {/* Action Buttons UI */}
@@ -291,7 +330,7 @@ export function ProductsSection() {
                             <Button
                               variant="outline"
                               size="icon"
-                              className="h-8 w-10 shrink-0 text-destructive border-transparent hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive transition-colors focus:ring-0 rounded-lg shadow-sm bg-card"
+                              className="h-8 w-10 shrink-0 text-destructive border-transparent hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive transition-colors focus:ring-0 rounded-lg shadow-sm bg-muted/50"
                               onClick={() => removeItem(product.id)}
                               disabled={removeItemMutation.isPending}
                               title={t("Savatdan olib tashlash")}
@@ -299,7 +338,7 @@ export function ProductsSection() {
                               <Trash2 className="h-4 w-4" />
                             </Button>
                             <Button 
-                              className="flex-1 h-8 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold shadow-none transition-colors rounded-lg"
+                              className="flex-1 h-8 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold shadow-none transition-colors rounded-lg"
                               asChild
                             >
                               <Link to="/cart">

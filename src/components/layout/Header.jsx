@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -32,7 +32,6 @@ export function Header() {
 
   useEffect(() => {
     if (location.pathname !== '/') {
-      setActiveSection('');
       return;
     }
 
