@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ThemeToggle } from '../common/ThemeToggle';
@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LoginModal } from '@/components/auth/LoginModal';
 import { RegisterModal } from '@/components/auth/RegisterModal';
 import { Logo } from '@/components/common/Logo';
+import { HashLink } from 'react-router-hash-link';
 
 export function Header() {
   const { t } = useTranslation();
@@ -27,63 +28,36 @@ export function Header() {
     enabled: isAuthenticated,
   });
   const location = useLocation();
-  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    // Boshqa sahifada bo'lsa — active holatni tozala
     if (location.pathname !== '/') {
       setActiveSection('');
       return;
     }
 
-    const handleScroll = () => {
-      const sections = ['home', 'products', 'about', 'contact', 'faq'];
-      const scrollPosition = window.scrollY + 200;
+    const HEADER_HEIGHT = 80;
+    const sections = ['home', 'products', 'about', 'faq', 'contact'];
 
-      for (const section of sections) {
-        const element = document.getElementById(section);
-        if (element) {
-          const { offsetTop, offsetHeight } = element;
-          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
-            setActiveSection(section);
-          }
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      let current = 'home';
+
+      for (const id of sections) {
+        const el = document.getElementById(id);
+        if (el && scrollY >= el.offsetTop - HEADER_HEIGHT) {
+          current = id;
         }
       }
+
+      setActiveSection(current);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, [location.pathname]);
-
-  // Boshqa sahifadan kelib, section ga scroll qilish
-  useEffect(() => {
-    if (location.pathname === '/') {
-      const target = location.state?.scrollTo;
-      if (target) {
-        // State ni tozala (orqaga bossanda qayta scroll qilmasligi uchun)
-        window.history.replaceState({}, '');
-        setTimeout(() => {
-          const el = document.getElementById(target);
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-      }
-    }
-  }, [location.pathname, location.state]);
-
-  const handleSectionClick = (e, sectionId) => {
-    e.preventDefault();
-    if (location.pathname === '/') {
-      // Shu sahifadamiz — to'g'ridan scroll (scroll-mt-* CSS ishlaydi)
-      const el = document.getElementById(sectionId);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      // Boshqa sahifadamiz — state orqali home ga o'tish
-      navigate('/', { state: { scrollTo: sectionId } });
-    }
-  };
 
   const cartItems = cartData?.cartItems || [];
 
@@ -116,12 +90,12 @@ export function Header() {
                 ].map((item) => {
                   const Icon = item.icon;
                   return (
-                  <a 
+                  <HashLink 
                     key={item.id}
-                    href={`/#${item.id}`}
-                    onClick={(e) => { 
+                    to={`/#${item.id}`}
+                    smooth
+                    onClick={() => { 
                       setIsMobileMenuOpen(false);
-                      handleSectionClick(e, item.id);
                     }}
                     className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-base font-bold transition-all duration-300 ${
                       activeSection === item.id 
@@ -131,7 +105,7 @@ export function Header() {
                   >
                     <Icon className="w-5 h-5" />
                     {item.label}
-                  </a>
+                  </HashLink>
                 )})}
                 {isAuthenticated && (
                   <Link 
@@ -198,10 +172,10 @@ export function Header() {
             { id: 'faq', label: t('FAQ') },
             { id: 'contact', label: t('Aloqa') }
           ].map((item) => (
-            <a 
+            <HashLink 
               key={item.id}
-              href={`/#${item.id}`}
-              onClick={(e) => handleSectionClick(e, item.id)}
+              to={`/#${item.id}`}
+              smooth
               className={`relative flex items-center h-full text-sm font-medium transition-colors hover:text-primary ${
                 activeSection === item.id 
                   ? 'text-primary after:absolute after:-bottom-[1px] after:left-0 after:w-full after:h-[3px] after:bg-primary' 
@@ -209,7 +183,7 @@ export function Header() {
               }`}
             >
               {item.label}
-            </a>
+            </HashLink>
           ))}
         </nav>
 
