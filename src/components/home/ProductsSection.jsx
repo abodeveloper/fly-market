@@ -12,12 +12,14 @@ import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatPrice } from '@/utils/formatPrice';
 import { useCart } from '@/hooks/useCart';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
 
 export function ProductsSection() {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortOrder, setSortOrder] = useState('default');
 
@@ -29,11 +31,11 @@ export function ProductsSection() {
   });
 
   const { data: productsData, isLoading: isLoadingProducts } = useQuery({
-    queryKey: ['products', { sort: sortOrder, categoryId: selectedCategory, productName: searchTerm }],
+    queryKey: ['products', { sort: sortOrder, categoryId: selectedCategory, productName: debouncedSearchTerm }],
     queryFn: () => productAPI.getProducts({
       sort: sortOrder === 'default' ? '' : sortOrder,
       categoryId: selectedCategory === 'all' ? '' : selectedCategory,
-      productName: searchTerm,
+      productName: debouncedSearchTerm,
     }),
   });
 
